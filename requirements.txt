@@ -1,0 +1,6 @@
+chromadb
+sentence-transformers
+torch
+Pillow
+pypdf
+scikit-learn
