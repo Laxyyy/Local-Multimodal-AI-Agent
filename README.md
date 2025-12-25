@@ -1,10 +1,7 @@
-
 <div align="center">
 
 # 🧠 Local Multimodal AI Agent
 ### 本地多模态智能知识库助手
-
-[English](README_EN.md) | [简体中文](README.md)
 
 ![Python Version](https://img.shields.io/badge/Python-3.10-blue?style=for-the-badge&logo=python&logoColor=white)
 ![Model](https://img.shields.io/badge/Model-CLIP_%2B_MiniLM-ff69b4?style=for-the-badge&logo=openai&logoColor=white)
@@ -137,30 +134,33 @@ python main.py search_image "A futuristic city"
 
 ## 📊 实验报告与性能评估 (Performance Evaluation)
 
-> 本节展示了基于真实学术论文集（AirFL, VIGIL 等）的实测表现，验证了系统的智能程度。
+> 本节展示了基于真实学术论文集（AirFL, VIGIL, Causal Discovery）的实测表现，验证了系统的智能程度。
 
 ### 1. 智能分类鲁棒性测试
 
 为了验证 AI 是否具备真实的语义理解能力（而非随机猜测），我们设计了 **"统一混淆项测试" (Unified Confusion Test)**。
 即：对不同领域的论文，提供**完全相同**的候选主题列表，观察 AI 能否精准命中。
 
+* **统一候选池**: `"Edge_Computing, LLM_Agents, Computer_Vision, Robotics"`
 * **测试样本**:
-* Paper A: `AirFL (Signal Processing)`
-* Paper B: `VIGIL (LLM Agent)`
+1. `2512.03719v1.pdf`: AirFL / Edge AI 论文
+2. `2512.07094v2.pdf`: VIGIL / Self-Healing Agent 论文
+3. `testpaper3.pdf`: LLM-Driven Causal Discovery 论文
 
 
-* **统一候选池**: `"Edge_Computing, LLM_Agents, Computer_Vision"`
 
 | 论文文件 | 真实领域 | AI 预测分类 | 置信度 | 结果 |
 | --- | --- | --- | --- | --- |
-| `2512.03719v1.pdf` | Signal Processing | **Edge_Computing** | `0.40` | ✅ Pass |
-| `2512.07094v2.pdf` | LLM Agent | **LLM_Agents** | `0.47` | ✅ Pass |
+| `2512.03719v1.pdf` | Signal / Edge | **Edge_Computing** | `0.49` | ✅ Pass |
+| `2512.07094v2.pdf` | LLM Agent | **LLM_Agents** | `0.40` | ✅ Pass |
+| `testpaper3.pdf` | LLM / Data | **LLM_Agents** | `0.16` | ✅ Pass |
+
+> *注：`testpaper3` 虽然置信度较低（0.16），但系统依然正确识别了其 "LLM-Driven" 的核心属性，将其归入 LLM_Agents 类别，展现了模型的泛化边界。*
 
 <details>
-<summary>🔻 点击查看详细终端运行日志 (Screenshot)</summary>
+<summary>🔻 点击查看分类终端运行日志 (Screenshot)</summary>
 
 > **[请在此处插入你运行 add_paper 分类成功的截图]**
-> *图 1: 系统成功根据语义将两篇论文分入不同文件夹，尽管候选列表完全相同。*
 
 </details>
 
@@ -170,21 +170,42 @@ python main.py search_image "A futuristic city"
 
 验证系统是否能回答具体的学术问题，并区分干扰项。
 
-**测试 Query**: `"How does AirFL reduce latency and bandwidth consumption?"`
+#### 场景 A: 边缘计算性能分析
 
-* **预期**: 系统应检索到 AirFL 相关论文，而非 Agent 相关论文。
-* **Top-2 召回结果**:
+**Query**: `"How does AirFL reduce latency and bandwidth consumption?"`
 
+* **Top-3 召回结果**:
 ```text
-[1] 2512.03719v1.pdf (AirFL)  | Score: 0.3557 (High Relevance) 🌟
-[2] 2512.07094v2.pdf (VIGIL)  | Score: -0.1366 (Not Relevant)
+[1] 2512.03719v1.pdf (AirFL)  | Score: 0.3557 (相关) 🌟
+[2] testpaper3.pdf            | Score: -0.0347 (不相关)
+[3] 2512.07094v2.pdf (VIGIL)  | Score: -0.1366 (不相关)
 
 ```
 
-**分析**: 分数差异显著（>0.4 gap），证明向量数据库成功捕捉了 "Latency" 和 "Bandwidth" 与 AirFL 论文的强语义关联。
+
+> **分析**: 目标论文得分 0.35+，而其他两篇均为负分，系统完美实现了语义过滤。
+
+
+
+#### 场景 B: Agent 内部机制分析
+
+**Query**: `"What is the function of EmoBank in the VIGIL runtime?"`
+
+* **Top-3 召回结果**:
+```text
+[1] 2512.07094v2.pdf (VIGIL)  | Score: 0.3924 (高相关) 🌟
+[2] 2512.03719v1.pdf          | Score: 0.0763 (弱相关)
+[3] testpaper3.pdf            | Score: 0.0278 (弱相关)
+
+```
+
+
+> **分析**: 对于 "EmoBank" 这一专有名词，系统精准定位到 VIGIL 论文，分差显著。
+
+
 
 <details>
-<summary>🔻 点击查看搜索结果截图</summary>
+<summary>🔻 点击查看检索结果截图</summary>
 
 > **[请在此处插入 search_paper 结果截图]**
 
@@ -194,20 +215,15 @@ python main.py search_image "A futuristic city"
 
 ### 3. 跨模态以文搜图测试
 
-测试多模态 CLIP 模型的对齐能力。
+测试多模态 CLIP 模型的文本-图像对齐能力。我们使用了三张测试图片：`Picture1`(风景), `Picture2`(建筑), `Picture3`(猫)。
 
-**测试 Query**: `"A cat"` (寻找一张猫的照片)
+| 查询语句 (Query) | 预期图片 | Top-1 匹配结果 | 匹配度 | 结果 |
+| --- | --- | --- | --- | --- |
+| `"A cat"` | Picture3 (猫) | **Picture3.jpeg** | `0.2770` | ✅ Pass |
+| `"A Building"` | Picture2 (建筑) | **Picture2.jpg** | `0.2489` | ✅ Pass |
+| `"A landscape"` | Picture1 (风景) | **Picture1.jpg** | `0.2390` | ✅ Pass |
 
-* **图片库**: 包含建筑(Picture2)、猫(Picture3)、其他(Picture1)。
-* **检索结果**:
-
-```text
-[1] Picture3.jpeg (真实猫图) | 匹配度: 0.2770 🌟
-[2] Picture2.jpg  (干扰项)   | 匹配度: 0.1852
-
-```
-
-**结论**: 模型成功实现了文本到图像的跨模态映射。
+**结论**: 模型成功实现了精准的文本到图像跨模态映射，所有 Top-1 结果均与查询意图一致。
 
 <details>
 <summary>🔻 点击查看搜图结果截图</summary>
@@ -220,13 +236,19 @@ python main.py search_image "A futuristic city"
 
 ## 📂 项目结构 (Project Structure)
 
-```powershell
+```bash
 MyAI_Agent/
-├── 📂 db/                  # ChromaDB 向量数据库 (自动持久化)
-├── 📂 images/              # 本地图像数据集
+├── 📂 db/                  # ChromaDB 向量数据库
+├── 📂 images/              # 图像素材库
+│   ├── Picture1.jpg        # 风景
+│   ├── Picture2.jpg        # 建筑
+│   └── Picture3.jpeg       # 猫
 ├── 📂 papers/              # 论文存储库
-│   ├── 📂 Edge_Computing/  # [AI自动生成] 边缘计算类论文
-│   └── 📂 LLM_Agents/      # [AI自动生成] 大模型类论文
+│   ├── 📂 Edge_Computing/  # [自动分类]
+│   │   └── 2512.03719v1.pdf
+│   └── 📂 LLM_Agents/      # [自动分类]
+│       ├── 2512.07094v2.pdf
+│       └── testpaper3.pdf
 ├── main.py                 # 🚀 系统主程序入口
 ├── requirements.txt        # 依赖配置文件
 └── README.md               # 项目文档
