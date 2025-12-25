@@ -160,7 +160,8 @@ python main.py search_image "A futuristic city"
 <details>
 <summary>🔻 点击查看分类终端运行日志 (Screenshot)</summary>
 
-> **[请在此处插入你运行 add_paper 分类成功的截图]**
+>
+<img width="1086" height="129" alt="截屏2025-12-25 下午10 56 59" src="https://github.com/user-attachments/assets/3ecfbf6f-f56b-43d1-aa92-a44ffe0d3488" />
 
 </details>
 
@@ -207,7 +208,8 @@ python main.py search_image "A futuristic city"
 <details>
 <summary>🔻 点击查看检索结果截图</summary>
 
-> **[请在此处插入 search_paper 结果截图]**
+> 
+<img width="918" height="194" alt="截屏2025-12-25 下午10 58 02" src="https://github.com/user-attachments/assets/f14b2311-c93a-45bf-a647-16aa77c53e9c" />
 
 </details>
 
@@ -228,7 +230,8 @@ python main.py search_image "A futuristic city"
 <details>
 <summary>🔻 点击查看搜图结果截图</summary>
 
-> **[请在此处插入 search_image 结果截图]**
+> 
+<img width="665" height="482" alt="截屏2025-12-25 下午10 58 34" src="https://github.com/user-attachments/assets/64f7a3b1-d4db-4303-a258-bc92b0922318" />
 
 </details>
 
